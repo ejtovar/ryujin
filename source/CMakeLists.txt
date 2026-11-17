@@ -36,17 +36,6 @@ set(CORE_SOURCE_FILES
   driver/dashboard_text.cc
   driver/environment.cc
   driver/equation.cc
-  driver/equation_euler.cc
-  driver/equation_euler_aeos.cc
-  driver/equation_euler_atmospheric.cc
-  driver/equation_euler_barotropic.cc
-  driver/equation_euler_poisson.cc
-  driver/equation_euler_poisson_aeos.cc
-  driver/equation_euler_poisson_barotropic.cc
-  driver/equation_navier_stokes.cc
-  driver/equation_scalar_conservation.cc
-  driver/equation_scalar_convection_diffusion.cc
-  driver/equation_shallow_water.cc
   driver/logger.cc
   driver/parameter_editor.cc
   driver/parameter_model.cc
@@ -59,6 +48,32 @@ set(CORE_SOURCE_FILES
   output/quantities.cc
   output/vtu_output.cc
   )
+
+#
+# The registrations of the equations selected by EQUATIONS (top-level
+# CMakeLists.txt), filed under the equation that brings the parabolic
+# part, which requires the hyperbolic one:
+#
+
+set(_registrations_euler driver/equation_euler.cc)
+set(_registrations_euler_aeos driver/equation_euler_aeos.cc)
+set(_registrations_euler_atmospheric driver/equation_euler_atmospheric.cc)
+set(_registrations_euler_barotropic driver/equation_euler_barotropic.cc)
+set(_registrations_euler_poisson
+  driver/equation_euler_poisson.cc
+  driver/equation_euler_poisson_aeos.cc
+  driver/equation_euler_poisson_barotropic.cc
+  )
+set(_registrations_navier_stokes driver/equation_navier_stokes.cc)
+set(_registrations_scalar_conservation driver/equation_scalar_conservation.cc)
+set(_registrations_scalar_diffusion
+  driver/equation_scalar_convection_diffusion.cc
+  )
+set(_registrations_shallow_water driver/equation_shallow_water.cc)
+
+foreach(_equation ${EQUATIONS})
+  list(APPEND CORE_SOURCE_FILES ${_registrations_${_equation}})
+endforeach()
 
 if(WITH_FTXUI)
   list(APPEND CORE_SOURCE_FILES
@@ -103,10 +118,7 @@ target_link_libraries(object_core ${EXTERNAL_TARGETS})
 #
 
 set(OBJECT_TARGETS)
-foreach(_equation
-    euler euler_aeos euler_atmospheric euler_barotropic euler_poisson
-    navier_stokes scalar_conservation scalar_diffusion shallow_water
-    )
+foreach(_equation ${EQUATIONS})
   add_subdirectory(${_equation})
   list(APPEND OBJECT_TARGETS object_${_equation})
 endforeach()

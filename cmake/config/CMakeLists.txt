@@ -64,6 +64,11 @@ foreach(_feature
     )
 endforeach()
 
+# The equations compiled into the library (EQUATIONS):
+string(APPEND FEATURE_CONFIGURATION_STRING
+  "set(RYUJIN_EQUATIONS \"${EQUATIONS}\")\n"
+  )
+
 #
 # Version and configuration files:
 #

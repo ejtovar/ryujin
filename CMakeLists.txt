@@ -70,6 +70,40 @@ project(ryujin VERSION ${RYUJIN_VERSION} LANGUAGES CXX)
 
 set(NUMBER "double" CACHE STRING "The principal floating point type")
 
+#
+# The equations compiled into the library, all by default. A project that
+# links ryujin for equations of its own can build none of them (an empty
+# list), or only those it builds on. An equation that instantiates the
+# description of another one requires it:
+#
+
+set(RYUJIN_ALL_EQUATIONS
+  euler euler_aeos euler_atmospheric euler_barotropic euler_poisson
+  navier_stokes scalar_conservation scalar_diffusion shallow_water
+  )
+set(EQUATIONS "${RYUJIN_ALL_EQUATIONS}" CACHE STRING
+  "The equations compiled into the library, a semicolon-separated subset of: ${RYUJIN_ALL_EQUATIONS}"
+  )
+
+set(_equation_dependencies_euler_poisson euler euler_aeos euler_barotropic)
+set(_equation_dependencies_navier_stokes euler)
+set(_equation_dependencies_scalar_diffusion scalar_conservation)
+
+foreach(_equation ${EQUATIONS})
+  if(NOT _equation IN_LIST RYUJIN_ALL_EQUATIONS)
+    message(FATAL_ERROR
+      "Unknown equation \"${_equation}\" in EQUATIONS, the equations are: ${RYUJIN_ALL_EQUATIONS}"
+      )
+  endif()
+  foreach(_dependency ${_equation_dependencies_${_equation}})
+    if(NOT _dependency IN_LIST EQUATIONS)
+      message(FATAL_ERROR
+        "The equation \"${_equation}\" requires \"${_dependency}\" in EQUATIONS"
+        )
+    endif()
+  endforeach()
+endforeach()
+
 option(DEBUG_EXPENSIVE_BOUNDS_CHECK "Debug: enable debug code paths for additional limiter bounds checks" OFF)
 option(DEBUG_OUTPUT "Debug: enable detailed time-step output" OFF)
 option(DEBUG_SANITIZER "Debug: enable address and UBSAN sanitizers for DEBUG build" OFF)
